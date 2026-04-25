@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4 card p-4 shadow-sm" id="carre">
+        <h4 class="text-center mb-4">On se connecte ?</h4>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label class="form-label">Ton petit nom :</label>
+                <div class="vide">
+                    {{ form.username }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Le code secret :</label>
+                <div class="vide">
+                    {{ form.password }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" id="bouton-go">
+                Entrer dans la place
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Si tu veux personnaliser tes noms absurdes plus tard */
+    #carre { border-radius: 15px; border: 2px solid #333; }
+    .vide input { width: 100%; border-radius: 5px; border: 1px solid #ccc; padding: 5px; }
+    #bouton-go { font-weight: bold; text-transform: uppercase; }
+</style>
+{% endblock %}
