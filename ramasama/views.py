@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.db.models import Sum
 from django.core.mail import send_mail # Indispensable pour tes notifications email
 from .models import Vente
-from .forms import VenteForm # Vérifie que tu as bien renommé fomr.py en forms.py
+from .forms import VenteForm 
 
 # --- AUTHENTIFICATION ---
 
