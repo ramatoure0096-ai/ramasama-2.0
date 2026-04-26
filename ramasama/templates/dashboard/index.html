@@ -1,28 +1,32 @@
-{% extends 'Base.html' %}
+{% extends 'base.html' %}
 
-{% block content %}
+{% block main %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Tableau de Bord</h1>
+</div>
+
 <div class="row">
     <div class="col-md-4">
-        <div class="card text-white bg-success mb-3">
+        <div class="card text-white bg-success mb-3 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">Chiffre d'Affaires</h5>
-                <p class="fs-2">{{ total_ca }} FCFA</p>
+                <p class="fs-2 fw-bold">{{ total_ca }} FCFA</p>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card text-white bg-info mb-3">
+        <div class="card text-white bg-primary mb-3 shadow-sm">
             <div class="card-body">
-                <h5 class="card-title">Ventes Réalisées</h5>
-                <p class="fs-2">{{ nb_ventes }}</p>
+                <h5 class="card-title">Nombre de Ventes</h5>
+                <p class="fs-2 fw-bold">{{ nb_ventes }}</p>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card text-white bg-warning mb-3">
+        <div class="card text-white bg-info mb-3 shadow-sm">
             <div class="card-body">
-                <h5 class="card-title">Objectif du mois</h5>
-                <p class="fs-2">{{ progression }}%</p>
+                <h5 class="card-title">Progression</h5>
+                <p class="fs-2 fw-bold">{{ progression }}%</p>
             </div>
         </div>
     </div>
@@ -30,41 +34,42 @@
 
 <div class="row mt-4">
     <div class="col-12">
-        <div class="card shadow">
-            <div class="card-header bg-white"><strong>Analyse des ventes</strong></div>
-            <div class="card-body">
-                <canvas id="ventesChart" height="100"></canvas>
-            </div>
+        <div class="card shadow-sm p-4">
+            <h5 class="mb-4">Évolution des Ventes</h5>
+            <canvas id="ventesChart" height="100"></canvas>
         </div>
     </div>
 </div>
-{% endblock %}
-
 
 {{ labels|json_script:"labels-data" }}
 {{ data_ventes|json_script:"ventes-data" }}
 
 <script>
-    {
-        // 2. On récupère les données proprement via l'ID
+    document.addEventListener('DOMContentLoaded', function() {
         const labels = JSON.parse(document.getElementById('labels-data').textContent);
         const dataVentes = JSON.parse(document.getElementById('ventes-data').textContent);
-
-        const canvas = document.getElementById('ventesChart');
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Ventes cumulées',
-                        data: dataVentes,
-                        borderColor: '#0d6efd',
-                        tension: 0.3
-                    }]
+        
+        const ctx = document.getElementById('ventesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ventes journalières',
+                    data: dataVentes,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
                 }
-            });
-        }
-    }
+            }
+        });
+    });
 </script>
+{% endblock %}

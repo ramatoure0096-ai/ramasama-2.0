@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.decorators import login_required # Nouveau ! Le vigile à l'entrée 🔒
 from django.contrib import messages
-import json
-from django.shortcuts import render
 from django.db.models import Sum
 from .models import Vente
 
@@ -13,18 +12,20 @@ def log_in(request):
         if f.is_valid():
             u = f.get_user()
             login(request, u)
-            messages.success(request, "Bienvenue !")
-            return redirect('login')
+            messages.success(request, "Bienvenue Boss ! ✨")
+            # 🔥 CORRECTION MAJEURE : On va sur le dashboard, on tourne plus en rond !
+            return redirect('dashboard') 
     else:
         f = AuthenticationForm()
     return render(request, 'ramasama/login.html', {'form': f}) 
 
 def log_out(request):
     logout(request)
-    messages.info(request, "Bye !")
+    messages.info(request, "Bye Boss, à la prochaine ! 👋")
     return redirect('login')
 
-# Create your views here.
+# 🔥 Le vigile : Si t'es pas co, ça te renvoie vers le login direct
+@login_required(login_url='login')
 def dashboard_view(request):
     # 1. Calcul des KPIs pour les cartes colorées
     total_ca = Vente.objects.aggregate(Sum('montant'))['montant__sum'] or 0
@@ -32,7 +33,7 @@ def dashboard_view(request):
     progression = 75  # Exemple statique pour l'instant
     
     # 2. Préparation des données pour Chart.js
-    # On récupère par exemple les 7 dernières ventes
+    # On récupère les 7 dernières ventes
     dernieres_ventes = Vente.objects.order_by('-date')[:7]
     
     # On crée les listes Python
