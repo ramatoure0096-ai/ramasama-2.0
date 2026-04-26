@@ -1,0 +1,70 @@
+{% extends 'Base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Chiffre d'Affaires</h5>
+                <p class="fs-2">{{ total_ca }} FCFA</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Ventes Réalisées</h5>
+                <p class="fs-2">{{ nb_ventes }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Objectif du mois</h5>
+                <p class="fs-2">{{ progression }}%</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-white"><strong>Analyse des ventes</strong></div>
+            <div class="card-body">
+                <canvas id="ventesChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{{ labels|json_script:"labels-data" }}
+{{ data_ventes|json_script:"ventes-data" }}
+
+<script>
+    {
+        // 2. On récupère les données proprement via l'ID
+        const labels = JSON.parse(document.getElementById('labels-data').textContent);
+        const dataVentes = JSON.parse(document.getElementById('ventes-data').textContent);
+
+        const canvas = document.getElementById('ventesChart');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Ventes cumulées',
+                        data: dataVentes,
+                        borderColor: '#0d6efd',
+                        tension: 0.3
+                    }]
+                }
+            });
+        }
+    }
+</script>
