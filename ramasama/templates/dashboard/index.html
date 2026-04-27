@@ -1,107 +1,114 @@
 {% extends 'base.html' %}
 
 {% block main %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Tableau de Bord {% if not is_admin %}(Vendeur){% endif %} 📊</h2>
+<div class="container-fluid py-4" style="background: #f8f9fa; min-height: 100vh;">
+    
+    <div class="d-flex justify-content-between align-items-center mb-5 bg-white p-4 shadow-sm rounded-4 border-start border-primary border-5">
         <div>
-            <a href="{% url 'vente_create' %}" class="btn btn-success fw-bold">+ Nouvelle Vente</a>
+            <span class="badge {% if is_admin %}bg-danger{% else %}bg-primary{% endif %} mb-2 px-3 py-2 rounded-pill">
+                {% if is_admin %}ADMINISTRATION 🛡️{% else %}SESSION VENDEUR 💼{% endif %}
+            </span>
+            <h2 class="fw-bold text-dark m-0">{{ role }}</h2>
+            <p class="text-muted m-0 small">Compte actif : <strong>{{ user.username|upper }}</strong></p>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <a href="{% url 'vente_create' %}" class="btn btn-success fw-bold px-4 rounded-3 shadow-sm">＋ Vendre</a>
             {% if is_admin %}
-                <a href="{% url 'produit_create' %}" class="btn btn-primary fw-bold">+ Nouveau Produit</a>
+                <a href="{% url 'produit_create' %}" class="btn btn-dark fw-bold px-4 rounded-3 shadow-sm">＋ Stock</a>
             {% endif %}
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
+    <div class="row g-4 mb-5">
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 bg-primary text-white p-4">
-                <h6 class="text-uppercase small">Chiffre d'Affaires</h6>
-                <h2 class="fw-bold m-0">{{ total_ca }} FCFA</h2>
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                <h6 class="text-muted small fw-bold text-uppercase">CA {% if not is_admin %}Perso{% endif %}</h6>
+                <h3 class="fw-bold text-primary m-0">{{ total_ca }} <small style="font-size: 0.5em;">FCFA</small></h3>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 bg-success text-white p-4">
-                <h6 class="text-uppercase small">Nombre de Ventes</h6>
-                <h2 class="fw-bold m-0">{{ nb_ventes }}</h2>
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                <h6 class="text-muted small fw-bold text-uppercase">Ventes Réalisées</h6>
+                <h3 class="fw-bold text-success m-0">{{ nb_ventes }}</h3>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 bg-dark text-white p-4">
-                <h6 class="text-uppercase small">Panier Moyen</h6>
-                <h2 class="fw-bold m-0">{{ panier_moyen|floatformat:0 }} FCFA</h2>
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                <h6 class="text-muted small fw-bold text-uppercase">Moyenne / Vente</h6>
+                <h3 class="fw-bold text-dark m-0">{{ panier_moyen|floatformat:0 }} <small style="font-size: 0.5em;">FCFA</small></h3>
             </div>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row g-4">
         <div class="col-lg-8">
-            <div class="card shadow-sm border-0 p-4 mb-4">
-                <h5 class="fw-bold mb-3">Évolution des Ventes 📈</h5>
-                <div style="height: 300px;">
-                    <canvas id="salesChart"></canvas>
-                </div>
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="height: 400px;">
+                <h5 class="fw-bold mb-4">Suivi de Performance 📈</h5>
+                <canvas id="salesChart"></canvas>
             </div>
         </div>
 
         <div class="col-lg-4">
-            <div class="card shadow-sm border-0 p-4">
-                <h5 class="fw-bold mb-3">Produits en Stock 📦</h5>
-                <ul class="list-group list-group-flush">
-                    {% for p in produits %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold mb-4">Stock & Prix 📦</h5>
+                <div class="list-group list-group-flush">
+                    {% for p in produits|slice:":5" %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent border-light">
                         <div>
-                            <span class="fw-bold">{{ p.nom_prod }}</span><br>
+                            <p class="mb-0 fw-bold">{{ p.nom_prod }}</p>
                             <small class="text-muted">{{ p.prix }} FCFA</small>
                         </div>
                         {% if is_admin %}
-                        <div class="btn-group">
-                            <a href="{% url 'produit_edit' p.id_prod %}" class="btn btn-sm btn-outline-primary">✏️</a>
-                            <a href="{% url 'produit_delete' p.id_prod %}" class="btn btn-sm btn-outline-danger">🗑️</a>
-                        </div>
+                        <a href="{% url 'produit_edit' p.id_prod %}" class="btn btn-sm btn-light border">✏️</a>
                         {% endif %}
-                    </li>
-                    {% empty %}
-                    <li class="list-group-item text-center text-muted">Aucun produit...</li>
+                    </div>
                     {% endfor %}
-                </ul>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        const labels = {{ labels_json|safe }};
-        const data = {{ data_json|safe }};
+        // On récupère l'élément canvas
+        const ctx = document.getElementById('salesChart');
+        
+        if (ctx) {
+            // Astuce Daboy Rama : On passe par JSON.parse pour éviter les erreurs VS Code
+            const labelsData = {{ labels_json|safe }};
+            const salesData = {{ data_json|safe }};
 
-        if (labels.length === 0) {
-            ctx.font = "20px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("Aucune donnée disponible pour le moment 🌵", ctx.canvas.width/2, ctx.canvas.height/2);
-        } else {
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: labelsData,
                     datasets: [{
                         label: 'Ventes (FCFA)',
-                        data: data,
+                        data: salesData,
                         borderColor: '#0d6efd',
-                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        backgroundColor: 'rgba(13, 110, 253, 0.05)',
                         fill: true,
-                        tension: 0.3,
+                        tension: 0.4,
+                        borderWidth: 4,
                         pointRadius: 5
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false }
+                    },
                     scales: { 
-                        y: { beginAtZero: true, grid: { display: false } },
-                        x: { grid: { display: false } }
+                        y: { 
+                            beginAtZero: true,
+                            grid: { borderDash: [5, 5] } 
+                        },
+                        x: { 
+                            grid: { display: false } 
+                        }
                     }
                 }
             });

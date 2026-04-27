@@ -1,38 +1,27 @@
 {% extends 'base.html' %}
 
 {% block main %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-4 card p-4 shadow-sm" id="carre">
-        <h4 class="text-center mb-4">Connexion ?</h4>
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="mb-3">
-                <label class="form-label">Username:</label>
-                <div class="vide">
-                    {{ form.username }}
-                </div>
+<div class="d-flex justify-content-center align-items-center vh-100" style="background: #f0f2f5;">
+    <div class="col-md-4 col-11">
+        <div class="card border-0 shadow-lg p-5" style="border-radius: 30px;">
+            <div class="text-center mb-4">
+                <div class="bg-primary d-inline-block p-3 rounded-circle mb-3 text-white shadow">💎</div>
+                <h2 class="fw-bold m-0 text-dark">RAMASAMA</h2>
+                <p class="text-muted small fw-bold">ESPACE CONNEXION 🇬🇦</p>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Password:</label>
-                <div class="vide">
-                    {{ form.password }}
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-secondary">UTILISATEUR</label>
+                    <input type="text" name="username" class="form-control form-control-lg border-0 bg-light p-3 rounded-4" placeholder="Votre nom" required>
                 </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100" id="bouton-go">
-                Connecter
-            </button>
-        </form>
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary">MOT DE PASSE</label>
+                    <input type="password" name="password" class="form-control form-control-lg border-0 bg-light p-3 rounded-4" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-4 shadow-sm">SE CONNECTER </button>
+            </form>
+        </div>
     </div>
 </div>
-
-<style>
-    /* Si tu veux personnaliser tes noms absurdes plus tard */
-    #carre { border-radius: 15px; border: 2px solid #333; }
-    .vide input { width: 100%; border-radius: 5px; border: 1px solid #ccc; padding: 5px; }
-    #bouton-go { font-weight: bold; text-transform: uppercase; }
-</style>
 {% endblock %}
