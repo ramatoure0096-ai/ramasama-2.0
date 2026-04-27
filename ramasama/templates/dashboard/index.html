@@ -1,75 +1,111 @@
 {% extends 'base.html' %}
 
 {% block main %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Tableau de Bord</h1>
-</div>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Tableau de Bord {% if not is_admin %}(Vendeur){% endif %} 📊</h2>
+        <div>
+            <a href="{% url 'vente_create' %}" class="btn btn-success fw-bold">+ Nouvelle Vente</a>
+            {% if is_admin %}
+                <a href="{% url 'produit_create' %}" class="btn btn-primary fw-bold">+ Nouveau Produit</a>
+            {% endif %}
+        </div>
+    </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Chiffre d'Affaires</h5>
-                <p class="fs-2 fw-bold">{{ total_ca }} FCFA</p>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 bg-primary text-white p-4">
+                <h6 class="text-uppercase small">Chiffre d'Affaires</h6>
+                <h2 class="fw-bold m-0">{{ total_ca }} FCFA</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 bg-success text-white p-4">
+                <h6 class="text-uppercase small">Nombre de Ventes</h6>
+                <h2 class="fw-bold m-0">{{ nb_ventes }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 bg-dark text-white p-4">
+                <h6 class="text-uppercase small">Panier Moyen</h6>
+                <h2 class="fw-bold m-0">{{ panier_moyen|floatformat:0 }} FCFA</h2>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-primary mb-3 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Nombre de Ventes</h5>
-                <p class="fs-2 fw-bold">{{ nb_ventes }}</p>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 p-4 mb-4">
+                <h5 class="fw-bold mb-3">Évolution des Ventes 📈</h5>
+                <div style="height: 300px;">
+                    <canvas id="salesChart"></canvas>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-info mb-3 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Progression</h5>
-                <p class="fs-2 fw-bold">{{ progression }}%</p>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 p-4">
+                <h5 class="fw-bold mb-3">Produits en Stock 📦</h5>
+                <ul class="list-group list-group-flush">
+                    {% for p in produits %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <span class="fw-bold">{{ p.nom_prod }}</span><br>
+                            <small class="text-muted">{{ p.prix }} FCFA</small>
+                        </div>
+                        {% if is_admin %}
+                        <div class="btn-group">
+                            <a href="{% url 'produit_edit' p.id_prod %}" class="btn btn-sm btn-outline-primary">✏️</a>
+                            <a href="{% url 'produit_delete' p.id_prod %}" class="btn btn-sm btn-outline-danger">🗑️</a>
+                        </div>
+                        {% endif %}
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted">Aucun produit...</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card shadow-sm p-4">
-            <h5 class="mb-4">Évolution des Ventes</h5>
-            <canvas id="ventesChart" height="100"></canvas>
-        </div>
-    </div>
-</div>
-
-{{ labels|json_script:"labels-data" }}
-{{ data_ventes|json_script:"ventes-data" }}
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const labels = JSON.parse(document.getElementById('labels-data').textContent);
-        const dataVentes = JSON.parse(document.getElementById('ventes-data').textContent);
-        
-        const ctx = document.getElementById('ventesChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Ventes journalières',
-                    data: dataVentes,
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const labels = {{ labels_json|safe }};
+        const data = {{ data_json|safe }};
+
+        if (labels.length === 0) {
+            ctx.font = "20px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("Aucune donnée disponible pour le moment 🌵", ctx.canvas.width/2, ctx.canvas.height/2);
+        } else {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Ventes (FCFA)',
+                        data: data,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    }
                 }
-            }
-        });
+            });
+        }
     });
 </script>
 {% endblock %}
