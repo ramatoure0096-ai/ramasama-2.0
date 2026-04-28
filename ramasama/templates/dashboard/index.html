@@ -72,11 +72,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // On récupère l'élément canvas
+        
         const ctx = document.getElementById('salesChart');
         
         if (ctx) {
-            // Astuce Daboy Rama : On passe par JSON.parse pour éviter les erreurs VS Code
+            
             const labelsData = {{ labels_json|safe }};
             const salesData = {{ data_json|safe }};
 
