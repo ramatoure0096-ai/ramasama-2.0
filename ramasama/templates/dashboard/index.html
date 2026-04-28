@@ -1,75 +1,118 @@
 {% extends 'base.html' %}
 
 {% block main %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Tableau de Bord</h1>
-</div>
-
-<div class="row">
-    <div class="col-md-4">
-        <div class="card text-white bg-success mb-3 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Chiffre d'Affaires</h5>
-                <p class="fs-2 fw-bold">{{ total_ca }} FCFA</p>
-            </div>
+<div class="container-fluid py-4" style="background: #f8f9fa; min-height: 100vh;">
+    
+    <div class="d-flex justify-content-between align-items-center mb-5 bg-white p-4 shadow-sm rounded-4 border-start border-primary border-5">
+        <div>
+            <span class="badge {% if is_admin %}bg-danger{% else %}bg-primary{% endif %} mb-2 px-3 py-2 rounded-pill">
+                {% if is_admin %}ADMINISTRATION 🛡️{% else %}SESSION VENDEUR 💼{% endif %}
+            </span>
+            <h2 class="fw-bold text-dark m-0">{{ role }}</h2>
+            <p class="text-muted m-0 small">Compte actif : <strong>{{ user.username|upper }}</strong></p>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-primary mb-3 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Nombre de Ventes</h5>
-                <p class="fs-2 fw-bold">{{ nb_ventes }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-white bg-info mb-3 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">Progression</h5>
-                <p class="fs-2 fw-bold">{{ progression }}%</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card shadow-sm p-4">
-            <h5 class="mb-4">Évolution des Ventes</h5>
-            <canvas id="ventesChart" height="100"></canvas>
-        </div>
-    </div>
-</div>
-
-{{ labels|json_script:"labels-data" }}
-{{ data_ventes|json_script:"ventes-data" }}
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const labels = JSON.parse(document.getElementById('labels-data').textContent);
-        const dataVentes = JSON.parse(document.getElementById('ventes-data').textContent);
         
-        const ctx = document.getElementById('ventesChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Ventes journalières',
-                    data: dataVentes,
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true }
+        <div class="d-flex gap-2">
+            <a href="{% url 'vente_create' %}" class="btn btn-success fw-bold px-4 rounded-3 shadow-sm">＋ Vendre</a>
+            {% if is_admin %}
+                <a href="{% url 'produit_create' %}" class="btn btn-dark fw-bold px-4 rounded-3 shadow-sm">＋ Stock</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                <h6 class="text-muted small fw-bold text-uppercase">CA {% if not is_admin %}Perso{% endif %}</h6>
+                <h3 class="fw-bold text-primary m-0">{{ total_ca }} <small style="font-size: 0.5em;">FCFA</small></h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                <h6 class="text-muted small fw-bold text-uppercase">Ventes Réalisées</h6>
+                <h3 class="fw-bold text-success m-0">{{ nb_ventes }}</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                <h6 class="text-muted small fw-bold text-uppercase">Moyenne / Vente</h6>
+                <h3 class="fw-bold text-dark m-0">{{ panier_moyen|floatformat:0 }} <small style="font-size: 0.5em;">FCFA</small></h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="height: 400px;">
+                <h5 class="fw-bold mb-4">Suivi de Performance 📈</h5>
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold mb-4">Stock & Prix 📦</h5>
+                <div class="list-group list-group-flush">
+                    {% for p in produits|slice:":5" %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent border-light">
+                        <div>
+                            <p class="mb-0 fw-bold">{{ p.nom_prod }}</p>
+                            <small class="text-muted">{{ p.prix }} FCFA</small>
+                        </div>
+                        {% if is_admin %}
+                        <a href="{% url 'produit_edit' p.id_prod %}" class="btn btn-sm btn-light border">✏️</a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        const ctx = document.getElementById('salesChart');
+        
+        if (ctx) {
+            
+            const labelsData = {{ labels_json|safe }};
+            const salesData = {{ data_json|safe }};
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labelsData,
+                    datasets: [{
+                        label: 'Ventes (FCFA)',
+                        data: salesData,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.05)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 4,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            grid: { borderDash: [5, 5] } 
+                        },
+                        x: { 
+                            grid: { display: false } 
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
     });
 </script>
 {% endblock %}

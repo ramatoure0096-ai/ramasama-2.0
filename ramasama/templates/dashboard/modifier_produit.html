@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block main %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow p-4 border-0">
+            <h3 class="fw-bold mb-4 text-center">MODIFIER LE PRODUIT</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nom</label>
+                    <input type="text" name="nom" class="form-control" value="{{ produit.nom_prod }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Type</label>
+                    <input type="text" name="type" class="form-control" value="{{ produit.categorie_prod }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Prix</label>
+                    <input type="number" name="prix" class="form-control" value="{{ produit.prix }}" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">METTRE À JOUR 🔄</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

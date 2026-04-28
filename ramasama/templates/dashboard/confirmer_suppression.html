@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block main %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 text-center">
+        <div class="card shadow-lg p-5 border-0" style="border-radius: 20px;">
+            <h1 class="display-1 text-danger"><i class="fa-solid fa-triangle-exclamation"></i></h1>
+            <h2 class="fw-bold mt-3">Attention !</h2>
+            
+            {% if type == 'produit' %}
+                <p class="text-muted">Veux-tu vraiment supprimer le produit <strong>{{ produit.nom_prod }}</strong> ?</p>
+            {% else %}
+                <p class="text-muted">Veux-tu vraiment annuler la vente de <strong>{{ vente.produit.nom_prod }}</strong> ({{ vente.montant }} FCFA) ?</p>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-lg w-100 mb-3 fw-bold shadow">OUI, SUPPRIMER 🗑️</button>
+                <a href="javascript:history.back()" class="btn btn-light w-100 fw-bold border">ANNULER</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

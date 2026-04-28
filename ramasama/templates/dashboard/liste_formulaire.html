@@ -1,62 +1,50 @@
 {% extends 'base.html' %}
-{% load border_css %} {# Si vous utilisez des filtres personnalisés, sinon utilisez les classes Bootstrap #}
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-primary text-white py-3">
-                <h4 class="mb-0">
-                    {% if form.instance.pk %}
-                    <i class="bi bi-pencil-square"></i> Modifier la Vente #{{ form.instance.pk }}
-                    {% else %}
-                    <i class="bi bi-plus-circle"></i> Enregistrer une Nouvelle Vente
-                    {% endif %}
-                </h4>
+{% block main %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0" style="border-radius: 20px;">
+            <div class="card-header bg-primary text-white text-center py-4" style="border-radius: 20px 20px 0 0;">
+                <h3 class="fw-bold mb-0"> ENREGISTRER UNE VENTE</h3>
             </div>
             <div class="card-body p-4">
-                <form method="post" novalidate>
+                <form method="POST">
                     {% csrf_token %}
-
-                    {# Affichage des erreurs globales du formulaire #}
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for error in form.non_field_errors %}
-                        {{ error }}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    {# Génération automatique des champs avec style Bootstrap #}
-                    {% for field in form %}
+                    
                     <div class="mb-3">
-                        <label for="{{ field.id_for_label }}" class="form-label fw-bold">
-                            {{ field.label }}
-                        </label>
-
-                        {# Ajout manuel de la classe form-control au widget Django #}
-                        {{ field }}
-
-                        {% if field.help_text %}
-                        <div class="form-text">{{ field.help_text }}</div>
-                        {% endif %}
-
-                        {% if field.errors %}
-                        <div class="text-danger small">
-                            {% for error in field.errors %}
-                            {{ error }}
+                        <label class="form-label fw-bold">Sélectionner le Produit</label>
+                        <select name="produit" class="form-select form-select-lg" required>
+                            <option value="" selected disabled>--- Quel article a été vendu ? ---</option>
+                            {% for p in produits %}
+                                <option value="{{ p.id_prod }}">{{ p.nom_prod }} ({{ p.prix }} FCFA/unité)</option>
                             {% endfor %}
-                        </div>
-                        {% endif %}
+                        </select>
                     </div>
-                    {% endfor %}
 
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-check-lg"></i> Valider l'enregistrement
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Vendeur</label>
+                        <select name="vendeur" class="form-select" required>
+                            {% for v in vendeurs %}
+                                <option value="{{ v.id_vendeur }}">{{ v.prenom_vendeur }} {{ v.nom_vendeur }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Quantité vendue</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">x</span>
+                            <input type="number" name="quantite" class="form-control form-control-lg" value="1" min="1" required>
+                        </div>
+                        <small class="text-muted">Le prix total sera calculé automatiquement ! ✨</small>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold shadow">
+                            VALIDER LA VENTE 
                         </button>
-                        <a href="{% url 'liste_ventes' %}" class="btn btn-outline-secondary">
-                            Annuler
+                        <a href="{% url 'vente_list' %}" class="btn btn-light border fw-bold">
+                            RETOUR À L'HISTORIQUE
                         </a>
                     </div>
                 </form>
@@ -64,17 +52,12 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    // Optionnel : Script pour calculer automatiquement le montant total en JS 
-    // si vous avez les champs 'quantite' et 'prix_unitaire'
-    document.addEventListener('DOMContentLoaded', function () {
-        const quantiteInput = document.querySelector('input[name="quantite"]');
-        const montantInput = document.querySelector('input[name="montant"]');
-
-        // Logique de calcul si nécessaire pour améliorer l'expérience utilisateur
-    });
-</script>
+<style>
+    /* Petit effet de focus pour faire pro */
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+</style>
 {% endblock %}
